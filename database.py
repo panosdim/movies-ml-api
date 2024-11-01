@@ -56,14 +56,27 @@ def fetch_data_from_db(query: str, params: Tuple = ()) -> List[Tuple]:
 
 def get_movie_ratings() -> Tuple[List[int], List[float]]:
     """
-    Fetch movie ratings from database, filter those with a rating greater than zero, and normalize the ratings.
+    Fetch movie ratings from the database, and if the rating is missing or zero, assign a placeholder rating.
 
     Returns:
         Tuple[List[int], List[float]]: A tuple containing a list of movie IDs and a list of normalized ratings.
     """
-    data = fetch_data_from_db("SELECT movie_id, rating FROM watchlist WHERE rating > 0")
-    movie_ids = [movie[0] for movie in data]
-    ratings = [row[1] / 5.0 for row in data]
+    # Fetch all movies, including unrated ones
+    data = fetch_data_from_db("SELECT movie_id, rating FROM watchlist")
+
+    movie_ids = []
+    ratings = []
+
+    for row in data:
+        movie_id = row[0]
+        rating = row[1]
+        movie_ids.append(movie_id)
+
+        if rating is not None and rating > 0:
+            ratings.append(rating / 5.0)  # Normalize rating
+        else:
+            ratings.append(2.5 / 5.0)  # Placeholder rating if None or zero
+
     return movie_ids, ratings
 
 
