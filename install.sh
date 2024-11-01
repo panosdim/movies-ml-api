@@ -26,16 +26,18 @@ python3 -m venv $INSTALL_PATH/venv
 pip install -r requirements.txt
 
 # Check if needed files exist
-if [ -f .env ] && [ -f movies-ml.service ]; then
+if [ -f .env ] && [ -f logging.conf ] && [ -f movies-ml.service ]; then
     # Check if we upgrade or install for first time
     if is_service_exists 'movies-ml.service'; then
         systemctl stop movies-ml.service
         cp ./*.py $INSTALL_PATH
+        cp ./logging.conf $INSTALL_PATH
         cp ./.env $INSTALL_PATH
         systemctl start movies-ml.service
     else
         mkdir -p $INSTALL_PATH
         cp ./*.py $INSTALL_PATH
+        cp ./logging.conf $INSTALL_PATH
         cp ./.env $INSTALL_PATH
         cp movies-ml.service /usr/lib/systemd/system
         systemctl start movies-ml.service
