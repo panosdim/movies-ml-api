@@ -1,0 +1,11 @@
+requests~=2.32.3
+tensorflow~=2.18.0
+pandas~=2.2.3
+pip-system-certs~=4.0
+mysql-connector-python~=9.1.0
+uvicorn~=0.32.0
+fastapi~=0.115.4
+starlette~=0.41.2
+pydantic~=2.9.2
+numpy~=2.0.2
+python-dotenv~=1.0.1
