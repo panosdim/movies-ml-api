@@ -22,7 +22,7 @@ logging.config.fileConfig(fname="logging.conf", disable_existing_loggers=False)
 _logger = logging.getLogger(__name__)
 
 MOVIE_SUGGESTIONS_MODEL = "movie_suggestions.keras"
-
+is_training = False  # Global variable to track training status
 global movie_ids, ratings, genre_list, actor_list, director_list, model, num_movies
 
 
@@ -74,6 +74,13 @@ def version():
 
 @app.get("/train")
 def train():
+    global is_training
+    if is_training:
+        return JSONResponse(status_code=400,
+                            content=jsonable_encoder({"status": "error", "message": "Training is already in progress"}))
+
+    is_training = True
+
     try:
         global model
         populate_lists()
@@ -93,6 +100,7 @@ def train():
         new_model.save(MOVIE_SUGGESTIONS_MODEL)
         model = load_model(MOVIE_SUGGESTIONS_MODEL)
 
+        is_training = False
         _logger.info("Training completed.")
         return JSONResponse(
             status_code=200,
@@ -101,6 +109,7 @@ def train():
             ),
         )
     except Exception as e:
+        is_training = False
         _logger.error(f"Training failed: {str(e)}")
         return JSONResponse(
             status_code=500,
@@ -110,7 +119,11 @@ def train():
 
 @app.get("/suggestions")
 def suggestions():
-    global genre_list, actor_list, director_list, model, num_movies
+    global is_training, genre_list, actor_list, director_list, model, num_movies
+
+    if is_training:
+        return JSONResponse(status_code=503, content=jsonable_encoder(
+            {"status": "error", "message": "Service Unavailable: Training in progress"}))
 
     # Fetch new movie ids
     new_releases = fetch_new_releases(1) + fetch_new_releases(2)
